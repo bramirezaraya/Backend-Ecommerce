@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  password String
+  favorites UserFavorites[]
+  cart Cart[]
+  isDeleted Int @default(0)
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  lastLogin DateTime @default(now())
+}
+
+// tabla de relacion para saber los productos que un usuario tiene en su carrito
+model Cart{
+   id        Int      @id @default(autoincrement())
+  //relacion con el user.
+  idUser Int 
+  userCarrito User @relation(fields: [idUser], references: [id])
+  // relacion con el producto
+  idProducto Int 
+  productoCarrito Product @relation(fields: [idProducto], references: [id])
+  quantity Int @default(1)
+  isDeleted Int @default(0)
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+}
+
+// relacion user favorites, para saber los favoritos que ha marcado un usuario.
+model UserFavorites{
+  id Int @id @default(autoincrement())
+  //relacion con el user.
+  idUser Int 
+  user User @relation(fields: [idUser], references: [id])
+
+  // relacion con el producto
+  idProduct Int 
+  product Product @relation(fields: [idProduct], references: [id])
+
+  isDeleted Int @default(0)
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  name String 
+  imageUrl String 
+  description String
+  price Int
+  gender Gender 
+
+  article Type_Article? @relation(fields: [idArticle], references: [id]) // un producto esta asociado a un articulo
+  idArticle Int 
+
+  liga Liga? @relation(fields: [idLiga], references: [id])
+  idLiga Int
+
+  userFavorite UserFavorites[]
+  carrito Cart[]
+
+  isDeleted Int @default(0)
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+
+model Type_Article {
+  id Int @id @default(autoincrement())
+  
+  name String @unique
+  product Product[] // un articulo puede tener muchos productos
+
+  isDeleted Int @default(0)
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+
+model Liga{
+  id Int @id @default(autoincrement())
+  name String @unique
+  product Product[] // una liga puede tener muchos productos(equipos)
+
+  isDeleted Int @default(0)
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+enum Gender {
+  male
+  female
+  girl
+  boy
+}
